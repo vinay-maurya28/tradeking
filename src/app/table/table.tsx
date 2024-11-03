@@ -7,7 +7,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-
+import { Typography } from '@mui/material';
 const StockTable = ({ stocks}) => {
   return (
   
@@ -24,14 +24,26 @@ const StockTable = ({ stocks}) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {stocks.map((stock:any, index:any) => (
-            <TableRow key={index} hover>
-              <TableCell>{stock.name}</TableCell>
-              <TableCell>{stock.type}</TableCell>
-              <TableCell align="right">${stock.price}</TableCell>
-              <TableCell align="right">{stock.change_percent}%</TableCell>
+          {stocks.length >0 ?(
+             stocks.map((stock:any, index:any) => (
+              <TableRow key={index} hover>
+                <TableCell>{stock.name}</TableCell>
+                <TableCell>{stock.type}</TableCell>
+                <TableCell align="right">${stock.price}</TableCell>
+                <TableCell align="right">{stock.change_percent}%</TableCell>
+                <TableCell align="right">{stock.change_percent}%</TableCell>
+              </TableRow>
+            ))
+          ):(
+            <TableRow>
+              <TableCell colSpan={4} align="center">
+                <Typography variant="body1" color="textSecondary">
+                  Search above to add data in table.
+                </Typography>
+              </TableCell>
             </TableRow>
-          ))}
+          )}
+         
         </TableBody>
       </Table>
     </TableContainer>
