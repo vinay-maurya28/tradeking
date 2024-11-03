@@ -1,94 +1,101 @@
-import Image from "next/image";
+'use client'
 import styles from "./page.module.css";
+import { useEffect, useState } from "react";
+import StockTable from "./table/table";
+import Spinner from "./spinner/spinner";
+import Navbar from "./navbar/navbar";
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [stocks, setStocks]=useState<any>([])
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+   // Fetch search results from API
+   const fetchResults = async (searchQuery:any) => {
+    setLoading(true);
+    try {
+      console.log(searchQuery);
+      
+      const response = await fetch(`https://real-time-finance-data.p.rapidapi.com/search?query=${searchQuery}&language=en`,{
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-key': `d207130287mshd62c9a45278a473p148aadjsndc72017e759a`  // Or use the appropriate header field
+        }
+      });
+      const data = await response.json();
+      setResults(data.data.stock);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+    
+  const addToList=(arg:any)=>{
+    setResults([]);
+    setStocks((pre:any)=>[...pre,arg])
+    
+  }
+   // Debounce the API call
+   useEffect(() => {
+    // Only fetch if query is not empty
+    if (query.trim() === '') {
+      setResults([]);
+      return;
+    }
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    // Set a timeout to delay the API call
+    const delayDebounce = setTimeout(() => {
+      fetchResults(query);
+    }, 500); // 500ms delay
+
+    // Clear timeout if the query changes within the delay
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
+  return (
+    <>
+    <Navbar/>
+    <div className="container py-4" style={{height:'100vh'}}>
+      {loading && <Spinner/>}
+      <div >
+        <div className="d-flex justify-content-center position-relative">
+          <input type="text" 
+          className={styles.search} 
+          placeholder="Search"
+          onChange={(e) => setQuery (e.target.value)}
+          ></input>
+           <div className={styles.searchResult} >
+            {results.map((res:any,index)=>(
+              <div 
+              key={index} 
+              className={styles.boxShadow+" p-3 d-flex justify-content-between"}
+              onClick={()=>addToList(res)}>
+                <div>
+                  <div className={styles.titleFont+" "+styles.primaryColor}>
+                    {res.name}
+                  </div>
+                  <div className={styles.fontsmall}>
+                    {res.type}
+                  </div>
+                </div> 
+                <div>
+                  <div className={styles.titleFont}>
+                    ${res.price}
+                  </div>
+                  <div className={styles.fontsmall}>
+                    {res.change_percent} %
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+      <StockTable stocks={stocks} />
     </div>
+    </>
   );
-}
+};
+
+ 
+

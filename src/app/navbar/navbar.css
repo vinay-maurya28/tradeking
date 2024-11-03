@@ -1,0 +1,11 @@
+@import "../globals.css";
+
+.navBg{
+  background-color: var(--primaryColor) !important;
+}
+
+.navbar-brand{
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  color: #ffff;
+}
